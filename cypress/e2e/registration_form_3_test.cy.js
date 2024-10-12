@@ -190,8 +190,8 @@ describe('Section 1: Visual tests for registration form 3', () => {
     
     it('Check that privacy and cookie policy checkboxes are correct', () => {
         cy.contains('Accept our privacy policy').should('exist')
-        cy.get('input[type="checkbox"]').first().should('not.be.checked')
-        cy.get('input[type="checkbox"]').first().check().should('be.checked')
+        cy.get('input[type="checkbox"]').eq(0).should('not.be.checked')
+        cy.get('input[type="checkbox"]').eq(0).check().should('be.checked')
         cy.get('input[type="checkbox"]').eq(1).should('exist')
         cy.get('input[type="checkbox"]').eq(1).should('not.be.checked')
         cy.get('input[type="checkbox"]').eq(1).check().should('be.checked')
@@ -205,13 +205,13 @@ describe('Section 1: Visual tests for registration form 3', () => {
     
     it('Email input should support correct pattern', () => {
         cy.get('input[name="email"]').type('example@example.com').should('have.value', 'example@example.com');
-        cy.get('input[name="email"]').clear()
-        cy.get('input[name="email"]').type('invalid-email')
+        cy.get('#emailAlert span').should('not.be.visible')
+        cy.get('input[name="email"]').clear().type('invalid-email')
         cy.screenshot('Full page screenshot invalid email')
         cy.get('#emailAlert span').should('have.css', 'color', 'rgb(255, 0, 0)')
             .and('contain', 'Invalid email address.')
-        cy.get('span[id="successFrame"]').should('not.be.enabled')
-        })
+        cy.get('input[type="submit"]').should('not.be.enabled')   
+    })
 
 })
 
@@ -227,3 +227,85 @@ Task list:
     * mandatory fields are absent + corresponding assertions (try using function)
     * add file functionlity(google yourself for solution!)
  */
+describe('Section 1: Functional tests for registration form 3', () => {
+
+    it('User can submit form with all fields added', () => {
+        cy.get('#name').type('John')
+        cy.get('input[name="email"]').type('example@example.com')
+        cy.get('select[id="country"]').select('Spain').should('have.value','object:3')
+        cy.get('select[id="city"]').select('Malaga').invoke('val').should('deep.equal', ['string:Malaga'])
+        cy.get('input[type="date"]').eq(0).type('2024-01-01').should('have.value', '2024-01-01')
+        cy.get('input[type="radio"]').eq(0).check().should('have.value','Daily')
+        cy.get('input[type="date"]').eq(1).type('1982-10-28').should('have.value', '1982-10-28')
+        cy.get('input[type="checkbox"]').eq(0).check().should('be.checked')
+        cy.get('input[type="checkbox"]').eq(1).check().should('be.checked')
+        cy.get('h2').contains('Birthday').click()
+        cy.get('input[type="submit"]').should('be.enabled').click()
+        cy.url().should('contain', '/upload_file.html')
+        cy.get('h1').contains('Submission received')
+        cy.go('back')
+        cy.log('Back again in registration form 3')
+    })
+        
+    it('User can submit form with valid mandatory data', () => {
+        cy.get('input[name="email"]').type('example@example.com')
+        cy.get('select[id="country"]').select('Spain').should('have.value','object:3')
+        cy.get('select[id="city"]').select('Malaga').invoke('val').should('deep.equal', ['string:Malaga'])
+        cy.get('input[type="checkbox"]').eq(0).check().should('be.checked')
+        cy.get('input[type="checkbox"]').eq(1).check().should('be.checked')
+        cy.get('h2').contains('Birthday').click()
+        cy.get('input[type="submit"]').should('be.enabled').click()
+        cy.url().should('contain', '/upload_file.html')
+        cy.get('h1').contains('Submission received')
+        cy.go('back')
+        cy.log('Back again in registration form 3')
+    })
+
+    it('User can not submit form with mandatory email missing', () => {
+        inputValidData(email)
+        cy.get('input[name="email"]').clear()
+        cy.get('#emailAlert span').should('have.css', 'color', 'rgb(255, 0, 0)')
+            .and('contain', 'Email is required.')
+        cy.get('span[id="successFrame"]').should('not.be.enabled')
+        cy.get('input[type="submit"]').should('not.be.enabled')
+    })
+    
+    it('User can not submit form with mandatory city missing', () => {
+        inputValidData(email)
+        cy.get('#city').select(0)
+        cy.get('span[id="successFrame"]').should('not.be.enabled')
+        cy.get('input[type="submit"]').should('not.be.enabled')
+    })
+
+    it('User can not submit form with mandatory accept privacy policy missing', () => {
+        inputValidData(email)
+        cy.get('input[type="checkbox"]').eq(0).uncheck()
+        cy.get('span[id="successFrame"]').should('not.be.enabled')
+        cy.get('input[type="submit"]').should('not.be.enabled')
+    })
+
+    it('User can add file', () => {   
+        const fileName = 'example_file_for_tests.txt'
+        cy.get('input[type="file"]').should('have.value', '')
+        cy.get('input[type="file"]').attachFile(fileName)
+        cy.get('input[type="file"]').should('have.value', 'C:\\fakepath\\example_file_for_tests.txt')
+        cy.get('button[type="submit"]').click()
+        cy.url().should('contain', '/upload_file.html')
+        cy.get('h1').contains('Submission received')
+        cy.go('back')
+        cy.log('Back again in registration page')
+        cy.url().should('contain', '/registration_form_3.html')
+    })
+})
+
+function inputValidData(email) {
+    cy.log('Email will be filled')
+    cy.get('input[name="email"]').type(email)
+    cy.get('select[id="country"]').select('Spain').should('have.value','object:3')
+    cy.get('select[id="city"]').select('Malaga').invoke('val').should('deep.equal', ['string:Malaga'])
+    cy.get('input[type="checkbox"]').eq(0).check().should('be.checked')
+    cy.get('input[type="checkbox"]').eq(1).check().should('be.checked')
+    cy.get('h2').contains('Birthday').click()
+}
+
+let email = 'example@example.com'

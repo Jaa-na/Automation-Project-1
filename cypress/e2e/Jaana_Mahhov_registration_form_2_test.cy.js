@@ -106,16 +106,16 @@ describe('Section 2: Visual tests', () => {
 
     it('Check that logo is correct and has correct size', () => {
         cy.log('Will check logo source and size')
-        cy.get('img').should('have.attr', 'src').should('include', 'cerebrum_hub_logo')
-        cy.get('img').invoke('height').should('be.lessThan', 178)
+        cy.get('img').eq(0).should('have.attr', 'src').and('include', 'cerebrum_hub_logo')
+        cy.get('img').eq(0).invoke('height').should('be.lessThan', 178)
             .and('be.greaterThan', 100)   
     })
 
     it('Check that logo is correct and has correct size', () => {
         cy.log('Will check logo source and size')
-        cy.get('img').should('have.attr', 'src').should('include', 'cypress_logo')
-        cy.get('img').invoke('height').should('be.lessThan', 178)
-            .and('be.greaterThan', 100)
+        cy.get('img').eq(1).should('have.attr', 'src').and('include', 'cypress_logo')
+        cy.get('img').eq(1).invoke('height').should('be.lessThan', 120)
+            .and('be.greaterThan', 80)
     })
 
     it('Check navigation part and the first link', () => {
@@ -196,7 +196,7 @@ describe('Section 2: Visual tests', () => {
         cy.get('#cars').find('option').eq(1).should('have.text', 'Saab')
         cy.get('#cars').find('option').eq(2).should('have.text', 'Opel')
         cy.get('#cars').find('option').eq(3).should('have.text', 'Audi')
-        })
+    })
 
     it('Animal dropdown is correct', () => {
         cy.get('#animal').select(2).screenshot('Animals drop-down')
